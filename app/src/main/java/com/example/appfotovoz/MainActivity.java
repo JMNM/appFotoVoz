@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     obtenerDireccion(nBestList);
 
                     textoRec= (TextView) findViewById(R.id.textRec);
-                    textoRec.setText(Direccion + " " + margen_error);
+                    textoRec.setText("Dirección: "+Direccion + " " + margen_error);
 
                 }
             }
