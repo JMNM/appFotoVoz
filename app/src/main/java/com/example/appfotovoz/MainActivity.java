@@ -48,7 +48,7 @@ import android.annotation.SuppressLint;
  *  Aplicación de una brujula que le indica una dirección por voz y la muestra.
  *  @autor José Miguel Navarro Moreno
  *  @autor José Antonio Larrubia García
- *  @version 9.2.2016
+ *  @version 12.2.2016
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -89,8 +89,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //--------------------------------------------------------------------------------------
 
-    private String Direccion=null;
+    //String en el que se va a almacenar la dirección obtenida por la captación de voz
+    private String direccion=null;
     private int margen_error=30;
+    //Para el ángulo de la dirección que se le indica.
     float angulo_flecha;
     float angulo_ant=0f;
 
@@ -203,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mGeomagnetic = event.values;
                 break;
         }
+        //Si los sensores estan activos, se obtiene el valor de la orientación del dispositivo en grados.
         if ((mGravity != null) && (mGeomagnetic != null)) {
             float RotationMatrix[] = new float[16];
             boolean success = SensorManager.getRotationMatrix(RotationMatrix,null, mGravity, mGeomagnetic);
@@ -232,24 +235,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //-----------------------------------------------------------------
 
         //Si se le ha pasado una dirección por voz
-        if(Direccion!=null){
-            if(Direccion.equals("sur")){
+        //Se calcula el ángulo adecuado en función del ángulo en el que se encuentra el norte.
+        if(direccion!=null){
+            if(direccion.equals("sur")){
                 if(degree>0)
                     angulo_flecha=degree-180;
                 else
                     angulo_flecha=degree+180;
-            }else if(Direccion.equals("norte")){
+            }else if(direccion.equals("norte")){
                 angulo_flecha=degree;
-            }else if(Direccion.equals("este")){
+            }else if(direccion.equals("este")){
                 if(degree-90<-180)
                     angulo_flecha=degree-90+360;
                 else angulo_flecha=degree-90;
-            }else if(Direccion.equals("oeste")){
+            }else if(direccion.equals("oeste")){
                 if(degree+90>180)
                     angulo_flecha=degree+90-360;
                 else angulo_flecha=degree+90;
             }
-
+            //Se crea la animación
             RotateAnimation ra2 = new RotateAnimation(
                     angulo_ant,
                     angulo_flecha,
@@ -266,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             angulo_ant=-angulo_flecha;
 
-            //Se el dipositivo apunta hacia la dirección especificada se cambia el color de la flecha
+            //Se el dispositivo apunta hacia la dirección especificada se cambia el color de la flecha
             if(angulo_flecha<margen_error && angulo_flecha>-margen_error){
                 flecha.setImageResource(R.drawable.flechag);
             }else flecha.setImageResource(R.drawable.flechar);
@@ -291,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     obtenerDireccion(nBestList);
 
                     textoRec= (TextView) findViewById(R.id.textRec);
-                    textoRec.setText("Dirección: "+Direccion + " " + margen_error);
+                    textoRec.setText("Dirección: "+direccion + " " + margen_error);
 
                 }
             }
@@ -306,35 +310,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
     /**
      * Método para obtener la dirección y el margen de error de los resultados de la captacion de voz.
      * @param a Lista con les resultados del reconocedor de voz
      */
     private void obtenerDireccion(ArrayList<String> a){
+        //Lista con los posibles puntos cardinales
         ArrayList<String> puntos_car=new ArrayList<String>();
         puntos_car.add("norte");
         puntos_car.add("sur");
         puntos_car.add("este");
         puntos_car.add("oeste");
         boolean coincide=false;
-        Direccion=null;
+        direccion=null;
 
         // se comprueba de la lista de string de la detección de voz
         for(int i=0;i<puntos_car.size() && !coincide;i++){
-            for(int j=0;j<a.size()&&!coincide;j++){
-                if(a.get(j).length()>=puntos_car.get(i).length()) {
+            for(int j=0;j<a.size() && !coincide;j++){
+                if(a.get(j).length() >= puntos_car.get(i).length()) {
                     //Si coincide con un punto cardinal se guarda en dirección
                     if (puntos_car.get(i).equals((a.get(j).substring(0, puntos_car.get(i).length())).toLowerCase())) {
                         coincide = true;
-                        Direccion = puntos_car.get(i);
+                        direccion = puntos_car.get(i);
                     }
                 }
             }
         }
+        //Ahora hay que obtener el margen de error
         String numero;
         boolean es_num=false;
         //se obtiene el margen de error
-        if(Direccion!=null) {
+        if(direccion!=null) {
             //limpiamos el string obtenido por el detector de voz para que solo contenga el número eliminado todas las letras
             //Referencia: http://puntocomnoesunlenguaje.blogspot.com.es/2013/07/ejemplos-expresiones-regulares-java-split.html
             Pattern pat = Pattern.compile("[a-zA-Záéíóú]*(\\s)*[a-zA-Záéíóú]*");
